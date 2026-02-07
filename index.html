@@ -56,16 +56,21 @@ h1{
 .countdown{
   font-size:14px;
   font-weight:600;
-  margin:8px 0 12px;
+  margin:8px 0 14px;
 }
 
-.gif{
-  width:100%;
-  max-width:240px;
-  border-radius:16px;
-  margin:10px auto 18px;
-  display:block;
-  box-shadow:0 10px 22px rgba(0,0,0,.15);
+/* cute animated replacement for gif */
+.cat-box{
+  height:120px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:52px;
+  animation:kiss 1.2s infinite;
+}
+@keyframes kiss{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.2)}
 }
 
 .buttons{
@@ -89,7 +94,6 @@ button{
   left:50%;
   top:0;
   transform:translateX(-50%);
-  z-index:2;
 }
 
 #no{
@@ -99,7 +103,6 @@ button{
   left:50%;
   top:70px;
   transform:translateX(-50%);
-  z-index:1;
 }
 
 .result{
@@ -120,12 +123,12 @@ button{
 
 <body>
 
-<!-- Background music (starts after first tap) -->
-<audio id="music" loop>
-  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_6e5e8b0c99.mp3" type="audio/mpeg">
+<!-- AUDIO: plays ONLY after YES click -->
+<audio id="music" preload="auto">
+  <source src="https://cdn.pixabay.com/audio/2023/03/06/audio_6f6bfaec61.mp3" type="audio/mpeg">
 </audio>
 
-<div class="card" id="card">
+<div class="card">
   <h1 id="question">
     Will you be my valentine<br>
     my chuti <b>Nishi</b> baby? 💕
@@ -134,8 +137,8 @@ button{
   <div class="sub">Think carefully 😌</div>
   <div class="countdown" id="countdown"></div>
 
-  <!-- LOCAL CAT KISS GIF -->
-  <img src="cat-kiss.gif" class="gif" alt="cute cat kiss">
+  <!-- SAFE animated cat kiss -->
+  <div class="cat-box" id="catBox">🐱💋🐱</div>
 
   <div class="buttons">
     <button id="yes">Yes 💖</button>
@@ -153,21 +156,10 @@ const result=document.getElementById("result");
 const hint=document.getElementById("hint");
 const question=document.getElementById("question");
 const music=document.getElementById("music");
-const card=document.getElementById("card");
+const catBox=document.getElementById("catBox");
 const countdown=document.getElementById("countdown");
 
 let noScale=1;
-let musicStarted=false;
-
-/* Start music on FIRST user interaction */
-function startMusic(){
-  if(!musicStarted){
-    music.play();
-    musicStarted=true;
-  }
-}
-document.addEventListener("click", startMusic, { once:true });
-document.addEventListener("touchstart", startMusic, { once:true });
 
 /* NO runs away + shrinks */
 function moveNo(){
@@ -180,14 +172,15 @@ function moveNo(){
 no.addEventListener("touchstart",e=>{e.preventDefault();moveNo()});
 no.addEventListener("mouseenter",moveNo);
 
-/* YES click */
+/* YES click — MUSIC STARTS HERE (iOS SAFE) */
 yes.onclick=()=>{
   question.innerHTML="Hehehe 💕<br>I knew it, Nishi 😍";
+  catBox.textContent="💖🐱💋🐱💖";
   result.style.display="block";
   hint.style.display="block";
   no.style.display="none";
   yes.textContent="Yayyy 💖";
-  startMusic();
+  music.play(); // ← GUARANTEED
 };
 
 /* floating hearts */
