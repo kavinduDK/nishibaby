@@ -45,7 +45,7 @@ body{
 h1{
   font-size:24px;
   line-height:1.2;
-  margin:6px 0 6px;
+  margin:6px 0;
 }
 
 .sub{
@@ -59,23 +59,27 @@ h1{
   margin:8px 0 14px;
 }
 
-/* cute animated replacement for gif */
+/* cute animated cat kiss */
 .cat-box{
   height:120px;
   display:flex;
   justify-content:center;
   align-items:center;
   font-size:52px;
-  animation:kiss 1.2s infinite;
+  animation:pulse 1.2s infinite;
 }
-@keyframes kiss{
+@keyframes pulse{
   0%,100%{transform:scale(1)}
-  50%{transform:scale(1.2)}
+  50%{transform:scale(1.15)}
 }
 
+/* buttons area */
 .buttons{
   position:relative;
-  height:140px;
+  height:150px;
+  width:100%;
+  max-width:320px;
+  margin:0 auto;
 }
 
 button{
@@ -94,15 +98,16 @@ button{
   left:50%;
   top:0;
   transform:translateX(-50%);
+  z-index:2;
 }
 
 #no{
   background:#111;
   color:white;
   position:absolute;
-  left:50%;
-  top:70px;
-  transform:translateX(-50%);
+  left:140px;
+  top:90px;
+  z-index:1;
 }
 
 .result{
@@ -123,7 +128,7 @@ button{
 
 <body>
 
-<!-- AUDIO: plays ONLY after YES click -->
+<!-- Music (plays on YES click) -->
 <audio id="music" preload="auto">
   <source src="https://cdn.pixabay.com/audio/2023/03/06/audio_6f6bfaec61.mp3" type="audio/mpeg">
 </audio>
@@ -137,10 +142,9 @@ button{
   <div class="sub">Think carefully 😌</div>
   <div class="countdown" id="countdown"></div>
 
-  <!-- SAFE animated cat kiss -->
   <div class="cat-box" id="catBox">🐱💋🐱</div>
 
-  <div class="buttons">
+  <div class="buttons" id="buttonsArea">
     <button id="yes">Yes 💖</button>
     <button id="no">No 🙃</button>
   </div>
@@ -150,58 +154,78 @@ button{
 </div>
 
 <script>
-const yes=document.getElementById("yes");
-const no=document.getElementById("no");
-const result=document.getElementById("result");
-const hint=document.getElementById("hint");
-const question=document.getElementById("question");
-const music=document.getElementById("music");
-const catBox=document.getElementById("catBox");
-const countdown=document.getElementById("countdown");
+const yes = document.getElementById("yes");
+const no = document.getElementById("no");
+const result = document.getElementById("result");
+const hint = document.getElementById("hint");
+const question = document.getElementById("question");
+const catBox = document.getElementById("catBox");
+const music = document.getElementById("music");
+const countdown = document.getElementById("countdown");
+const buttonsArea = document.getElementById("buttonsArea");
 
-let noScale=1;
+let noScale = 1;
 
-/* NO runs away + shrinks */
+/* NO moves ONLY around YES */
 function moveNo(){
-  noScale-=0.1;
-  if(noScale<0.4)noScale=0.4;
-  no.style.transform=`translate(-50%,0) scale(${noScale})`;
-  no.style.left=Math.random()*80+"vw";
-  no.style.top=Math.random()*60+"vh";
-}
-no.addEventListener("touchstart",e=>{e.preventDefault();moveNo()});
-no.addEventListener("mouseenter",moveNo);
+  noScale -= 0.06;
+  if(noScale < 0.55) noScale = 0.55;
 
-/* YES click — MUSIC STARTS HERE (iOS SAFE) */
-yes.onclick=()=>{
-  question.innerHTML="Hehehe 💕<br>I knew it, Nishi 😍";
-  catBox.textContent="💖🐱💋🐱💖";
-  result.style.display="block";
-  hint.style.display="block";
-  no.style.display="none";
-  yes.textContent="Yayyy 💖";
-  music.play(); // ← GUARANTEED
+  const area = buttonsArea.getBoundingClientRect();
+  const yesRect = yes.getBoundingClientRect();
+
+  const box = 120; // movement radius around YES
+  let x = (yesRect.left + yesRect.width/2) - area.left + (Math.random()*box - box/2);
+  let y = (yesRect.top + yesRect.height/2) - area.top + (Math.random()*box - box/2);
+
+  const pad = 8;
+  const maxX = area.width - no.offsetWidth - pad;
+  const maxY = area.height - no.offsetHeight - pad;
+
+  x = Math.max(pad, Math.min(maxX, x));
+  y = Math.max(pad, Math.min(maxY, y));
+
+  no.style.left = x + "px";
+  no.style.top = y + "px";
+  no.style.transform = `scale(${noScale})`;
+}
+
+no.addEventListener("mouseenter", moveNo);
+no.addEventListener("touchstart", e => {
+  e.preventDefault();
+  moveNo();
+});
+
+/* YES click */
+yes.onclick = () => {
+  question.innerHTML = "Hehehe 💕<br>I knew it, Nishi 😍";
+  catBox.textContent = "💖🐱💋🐱💖";
+  result.style.display = "block";
+  hint.style.display = "block";
+  no.style.display = "none";
+  yes.textContent = "Yayyy 💖";
+  music.play();
 };
 
 /* floating hearts */
 setInterval(()=>{
-  const h=document.createElement("div");
-  h.className="heart";
-  h.textContent="💖";
-  h.style.left=Math.random()*100+"vw";
-  h.style.animationDuration=(Math.random()*3+3)+"s";
+  const h = document.createElement("div");
+  h.className = "heart";
+  h.textContent = "💖";
+  h.style.left = Math.random()*100 + "vw";
+  h.style.animationDuration = (Math.random()*3 + 3) + "s";
   document.body.appendChild(h);
   setTimeout(()=>h.remove(),6000);
 },400);
 
 /* countdown */
 function updateCountdown(){
-  const now=new Date();
-  let year=now.getFullYear();
-  let v=new Date(year,1,14);
-  if(now>v)v=new Date(year+1,1,14);
-  const days=Math.floor((v-now)/(1000*60*60*24));
-  countdown.textContent=`⏳ ${days} days until Valentine’s Day`;
+  const now = new Date();
+  let year = now.getFullYear();
+  let v = new Date(year,1,14);
+  if(now > v) v = new Date(year+1,1,14);
+  const days = Math.floor((v - now)/(1000*60*60*24));
+  countdown.textContent = `⏳ ${days} days until Valentine’s Day`;
 }
 updateCountdown();
 setInterval(updateCountdown,60000);
